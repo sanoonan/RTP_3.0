@@ -13,6 +13,8 @@ RigidBody :: RigidBody()
 	no_hit_col = glm::vec3(0.0f, 1.0f, 0.0f);
 	hit_col = glm::vec3(1.0f, 0.0f, 0.0f);
 	collision = false;
+
+	id = 0;
 }
 
 RigidBody :: RigidBody(Mesh _mesh)
@@ -35,6 +37,7 @@ RigidBody :: RigidBody(const char* filename)
 	body.mesh = mesh;
 	body.mass = 1;
 	body.drag_coeff = 1;
+
 
 	*this = body;
 }
@@ -78,11 +81,14 @@ void RigidBody :: drawBSphere(GLuint spID)
 
 void RigidBody :: addTBar(TwBar *bar)
 {
-	TwAddVarRW(bar, "Position", TW_TYPE_DIR3F, &position, "");
-	TwAddVarRO(bar, "Orientation", TW_TYPE_DIR3F, &orientation, "");
-	TwAddVarRW(bar, "Velocity", TW_TYPE_DIR3F, &velocity, "");
-	TwAddVarRW(bar, "Angular Velocity", TW_TYPE_DIR3F, &ang_velocity, "");
-	TwAddVarRW(bar, "Drag Coefficient", TW_TYPE_FLOAT, &drag_coeff, "");
+	char char_id = (char)(((int)'0')+id);
+
+	TwAddVarRW(bar, char_id+"Position", TW_TYPE_DIR3F, &position, " label = 'Position' ");
+//	TwAddVarRO(bar, char_id+"Orientation", TW_TYPE_DIR3F, &orientation, " label = 'Orientation' ");
+//	TwAddVarRW(bar, char_id+"Velocity", TW_TYPE_DIR3F, &velocity, " label = 'Velocity' ");
+//	TwAddVarRW(bar, char_id+"Angular Velocity", TW_TYPE_DIR3F, &ang_velocity, " label = 'Angular Velocity' ");
+//	TwAddVarRW(bar, char_id+"Drag Coefficient", TW_TYPE_FLOAT, &drag_coeff, " label = 'Drag Coefficient' ");
+//	TwAddVarRW(bar, char_id+"Drag Coefficient", TW_TYPE_FLOAT, &drag_coeff, " label = 'Drag Coefficient' ");
 }
 
 void RigidBody :: update(float dt)
@@ -98,7 +104,7 @@ void RigidBody :: update(float dt)
 	transformVertices();
 
 	updateBBColour();
-	b_sphere.transform(translation_mat);
+	b_sphere.update(model_mat);
 }
 
 glm::vec3 RigidBody :: calcDrag(glm::vec3 v)

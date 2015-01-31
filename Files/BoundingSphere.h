@@ -25,6 +25,9 @@
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 
+#include <glm/glm.hpp>
+#include <glm/gtx/norm.hpp>
+
 using namespace std;
 
 class BoundingSphere
@@ -41,7 +44,13 @@ public:
 
 	bool checkCollision(BoundingSphere other);
 
+
 	void draw(GLuint spID, glm::vec3 colour);
 
-	void transform(glm::mat4 translation_mat);
+	void update(glm::mat4 model_mat);
+
+	glm::vec3 _min, _max;
+	std::vector<glm::vec3> _v;
+
+
 };

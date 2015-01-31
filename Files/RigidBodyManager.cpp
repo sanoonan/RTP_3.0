@@ -5,6 +5,7 @@ using namespace std;
 
 
 RigidBodyManager :: RigidBodyManager()
+
 {
 	num = 0;
 	drag_coeff = 0;
@@ -13,8 +14,9 @@ RigidBodyManager :: RigidBodyManager()
 
 void RigidBodyManager :: addRigidBody(RigidBody body)
 {
-	body.drag_coeff = drag_coeff;
 	num++;
+	body.id = num;
+	body.drag_coeff = drag_coeff;
 	bodies.push_back(body);
 }
 
@@ -36,6 +38,7 @@ void RigidBodyManager :: addTBar(TwBar *bar)
 {
 	TwAddVarRO(bar, "Drag Coefficient", TW_TYPE_FLOAT, &drag_coeff, "");
 	TwAddVarRO(bar, "Number of Bodies", TW_TYPE_INT8, &num, "");
+
 }
 
 void RigidBodyManager :: load_mesh()
@@ -118,13 +121,19 @@ void RigidBodyManager :: drawBSpheres(GLuint spID)
 void RigidBodyManager :: checkCollisions()
 {
 	for(int i=0; i<num; i++)
+		bodies[i].collision = false;
+
+	for(int i=0; i<num; i++)
 		for(int j=0; j<num; j++)
 		{
 			if(i != j)
 			{
-				bool collision = bodies[i].b_sphere.checkCollision(bodies[j].b_sphere);
-				bodies[i].collision = collision;
-				bodies[j].collision = collision;
+				if(bodies[i].b_sphere.checkCollision(bodies[j].b_sphere))
+				{
+					bodies[i].collision = true;
+					bodies[j].collision = true;
+				}
 			}
 		}
 }
+

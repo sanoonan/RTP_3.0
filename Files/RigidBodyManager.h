@@ -37,7 +37,10 @@ public:
 	RigidBodyManager();
 
 	std::vector<RigidBody> bodies;
+	
+
 	int num;
+
 	float drag_coeff;
 
 	void addRigidBody(RigidBody body);

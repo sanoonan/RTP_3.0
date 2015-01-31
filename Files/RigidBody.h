@@ -37,6 +37,9 @@ class RigidBody
 {
 public:
 
+	int id;
+
+
 	glm::vec3 position;
 	glm::vec3 orientation;
 

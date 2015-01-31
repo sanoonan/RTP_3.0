@@ -36,9 +36,14 @@ int height = 900;
 
 #define V_SHADER_NOTEXTURE "../Shaders/noTextureVertexShader.txt"
 #define F_SHADER_NOTEXTURE "../Shaders/noTextureFragmentShader.txt"
-#define MESH_SUZANNE "Meshes/cube.dae"
+
 #define V_SHADER_LINE "../Shaders/lineVertexShader.txt"
 #define F_SHADER_LINE "../Shaders/lineFragmentShader.txt"
+
+#define MESH_SUZANNE "Meshes/suzanne.dae"
+#define MESH_CUBE "Meshes/cube.dae"
+#define MESH_SPHERE "Meshes/sphere.dae"
+#define MESH_TORUS "Meshes/torus.dae"
 
 int oldTime = 0;
 
@@ -184,6 +189,9 @@ void init_tweak()
 	camera.addTBar(bar);
 	TwAddButton(bar, "Pause", pause, NULL, "");
 
+	for(int i=0; i<bodies.num; i++)
+		bodies.bodies[i].addTBar(bar);
+
 }
 
 void draw_tweak()
@@ -203,8 +211,10 @@ void init()
 
 	bodies.drag_coeff = default_drag_coef;
 	bodies.addRigidBody(MESH_SUZANNE);
-	bodies.addRigidBody(MESH_SUZANNE);
-	bodies.bodies[1].position = glm::vec3(-0.5f, 0.0f, -3.0f);
+	bodies.addRigidBody(MESH_CUBE);
+	bodies.addRigidBody(MESH_SPHERE);
+	bodies.addRigidBody(MESH_TORUS);
+	
 	bodies.load_mesh();
 
 	init_tweak();
