@@ -74,7 +74,7 @@ BoundingSphere :: BoundingSphere(std::vector<glm::vec3> v)
 	centre = mid;
 	radius = max_dist/2;
 	*/
-		/*
+	/*	
 	float max_dist = 0;
 	glm::vec3 mid;
 
@@ -83,16 +83,21 @@ BoundingSphere :: BoundingSphere(std::vector<glm::vec3> v)
 	for(int i=0; i<num; i++)
 		for(int j=0; j<num; j++)
 		{
-			float distance = glm::length2(v[i]-v[j]);
+			float distance = glm::length(v[i]-v[j]);
 			if(distance > max_dist)
 			{
 				max_dist = distance;
 				mid = (v[i] + v[j]) * (0.5f);
 			}
 		}
-*/
-	//RITTERS BOUNDING SPHERE
 
+	centre = mid;
+	radius = max_dist/2;
+	*/
+	
+
+
+	//RITTERS BOUNDING SPHERE
 	glm::vec3 vmin, vmax;
 
 	vmin = vmax = v[0];
@@ -127,7 +132,7 @@ BoundingSphere :: BoundingSphere(std::vector<glm::vec3> v)
 	float r;
 
 	c = mid;
-	r = (sqrt(max_dist))/2;
+	r = max_dist/2;
 	float r2 = r*r;
 	int n = 0;
 
@@ -148,8 +153,6 @@ BoundingSphere :: BoundingSphere(std::vector<glm::vec3> v)
 			diameter += diff;
 			r = diameter/2;
 			r2 = r*r;
-
-
 
 			diff /= 2;
 

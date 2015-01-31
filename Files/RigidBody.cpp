@@ -54,6 +54,7 @@ void RigidBody :: load_mesh()
 	inertial_tensor = calcInertialTensorBox();
 
 	b_sphere = BoundingSphere(vertices);
+	aabb = AABB(vertices);
 }
 
 void RigidBody :: draw(GLuint spID)
@@ -61,12 +62,15 @@ void RigidBody :: draw(GLuint spID)
 	mesh.draw(spID, model_mat);
 }
 
-void RigidBody :: updateBBColour()
+void RigidBody :: updateBB()
 {
 	if(collision)
 		current_col = hit_col;
 	else
 		current_col = no_hit_col;
+
+	b_sphere.update(model_mat);
+	aabb.update(transformed_vertices);
 }
 
 
@@ -75,7 +79,10 @@ void RigidBody :: drawBSphere(GLuint spID)
 	b_sphere.draw(spID, current_col);
 }
 
-
+void RigidBody :: drawAABB(GLuint spID)
+{
+	aabb.draw(spID, current_col);
+}
 
 
 
@@ -103,9 +110,10 @@ void RigidBody :: update(float dt)
 
 	transformVertices();
 
-	updateBBColour();
-	b_sphere.update(model_mat);
+	updateBB();
 }
+
+
 
 glm::vec3 RigidBody :: calcDrag(glm::vec3 v)
 {
@@ -385,7 +393,6 @@ void RigidBody :: affectedByForce(Effector effector)
 	fi.force = effector.force_mag * effector.force_dir;
 	fi.time_left = effector.time;
 
-	centre_of_mass = updateCOM(transformed_vertices);
 	fi.torque = glm::cross((centre_of_mass - effector.position), fi.force);
 
 	

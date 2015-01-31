@@ -62,7 +62,111 @@ public:
 	bool checkRayHit(glm::vec3 ray_origin, glm::vec3 p1, glm::vec3 p2, int &hit_target, glm::vec3 &hit_pos);
 
 	void drawBSpheres(GLuint spID);
+	void drawAABBs(GLuint spID);
 
-	void checkCollisions();
+	void checkCollisionsSphere();
+	void checkCollisionsAABB();
 
+	struct SPpoint
+	{
+		int id;
+		float point;
+		bool start;
+
+		SPpoint *prev;
+		SPpoint *next;
+
+		SPpoint()
+		{
+			id = NULL;
+			point = NULL;
+			start = false;
+			prev = NULL;
+			next = NULL;
+		}
+
+		SPpoint(int _id, float _point, bool _start)
+		{
+			id = _id;
+			point = _point;
+			start = _start;
+			prev = NULL;
+			next = NULL;
+		}
+
+		bool operator > (SPpoint &other)
+		{
+			return point > other.point;
+		}
+
+		bool operator< (SPpoint &other)
+		{
+			return point < other.point;
+		}	
+	};
+
+	struct SPpointList
+	{
+		SPpoint *head;
+		SPpoint *tail;
+
+		SPpointList()
+		{
+			head = NULL;
+			tail = NULL;
+		}
+
+		void addToEnd(SPpoint &p)
+		{
+			if(head == NULL)
+			{
+				head = &p;
+				tail = &p;
+				p.prev = NULL;
+				p.next = NULL;
+			}
+			else
+			{
+				tail->next = &p;
+				p.prev = tail;
+				p.next = NULL;
+				tail = &p;
+			}
+		}
+
+		void addToStart(SPpoint &p)
+		{
+			if(head == NULL)
+			{
+				head = &p;
+				tail = &p;
+				p.prev = NULL;
+				p.next = NULL;
+			}
+			else
+			{
+				head->prev = &p;
+				p.prev = NULL;
+				p.next = head;
+				head = &p;
+			}
+		}
+	};
+	
+	std::vector<SPpoint> unsortedx;
+	std::vector<SPpoint> unsortedy;
+	std::vector<SPpoint> unsortedz;
+
+	SPpointList xlist;
+	SPpointList ylist;
+	SPpointList zlist;
+
+
+	void createUSlists();
+	void updateUSlists();
+	void createSPlists();
+	void updateSPlists();
+	void insertionSort(SPpointList &list);
+
+	void checkCollisionsAABBSweepPrune();
 };

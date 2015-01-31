@@ -26,6 +26,7 @@
 #include "Effector.h"
 #include "Camera.h"
 #include "Shaders.h"
+#include "AABB.h"
 
 #include "AntTweakBar.h"
 
@@ -256,7 +257,7 @@ void display()
 	glUniformMatrix4fv (new_proj_mat_location, 1, GL_FALSE, glm::value_ptr(proj_mat));
 	glUniformMatrix4fv (new_view_mat_location, 1, GL_FALSE, glm::value_ptr(view_mat));
 
-	bodies.drawBSpheres(line_shader.id);
+	bodies.drawAABBs(line_shader.id);
 
 
 
@@ -283,7 +284,8 @@ void updateScene()
 		elapsed_seconds = 0;
 
 	bodies.update(elapsed_seconds);
-	bodies.checkCollisions();
+//	bodies.checkCollisionsSphere();
+	bodies.checkCollisionsAABBSweepPrune();
 
 	glutPostRedisplay();
 }

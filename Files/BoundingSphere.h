@@ -49,8 +49,5 @@ public:
 
 	void update(glm::mat4 model_mat);
 
-	glm::vec3 _min, _max;
-	std::vector<glm::vec3> _v;
-
 
 };

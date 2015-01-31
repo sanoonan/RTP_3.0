@@ -30,6 +30,7 @@
 #include "Mesh.h"
 #include "Effector.h"
 #include "BoundingSphere.h"
+#include "AABB.h"
 
 #include "AntTweakBar.h"
 
@@ -79,6 +80,7 @@ public:
 	Mesh mesh;
 
 	BoundingSphere b_sphere;
+	AABB aabb;
 
 	bool collision;
 	glm::vec3 no_hit_col, hit_col, current_col;
@@ -91,8 +93,9 @@ public:
 	void load_mesh();
 	void draw(GLuint spID);
 
-	void updateBBColour();
+	void updateBB();
 	void drawBSphere(GLuint spID);
+	void drawAABB(GLuint spID);
 
 	void addTBar(TwBar *bar);
 

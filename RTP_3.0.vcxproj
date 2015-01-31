@@ -86,6 +86,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Files\AABB.h" />
     <ClInclude Include="Files\BoundingSphere.h" />
     <ClInclude Include="Files\Camera.h" />
     <ClInclude Include="Files\Effector.h" />
@@ -95,6 +96,7 @@
     <ClInclude Include="Files\Shaders.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Files\AABB.cpp" />
     <ClCompile Include="Files\BoundingSphere.cpp" />
     <ClCompile Include="Files\Camera.cpp" />
     <ClCompile Include="Files\Effector.cpp" />
