@@ -48,7 +48,7 @@ int height = 900;
 
 int oldTime = 0;
 
-Camera camera(glm::vec3(0.0f, 0.0f, 10.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 50.0f));
 
 
 
@@ -60,7 +60,7 @@ Effector effector;
 glm::mat4 proj_mat, view_mat;
 
 float default_force_mag = 5.0f;
-float default_drag_coef = 1.0f;
+float default_drag_coef = 0.0f;
 bool is_paused = false;
 
 Shaders noTex_shader("noTexture", V_SHADER_NOTEXTURE, F_SHADER_NOTEXTURE);
@@ -205,16 +205,59 @@ void draw_tweak()
 #pragma endregion 
 
 
+void assignRandomVels()
+{
+	for(int i=0; i<bodies.num; i++)
+	{
+		float LO = -1.0f;
+		float HI = 1.0f;
+
+		float r1 = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+		float r2 = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+		float r3 = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+		float r4 = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+		float r5 = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+		float r6 = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+
+		glm::vec3 linear(r1, r2, r3);
+		glm::vec3 angular(r4, r5, r6);
+
+		bodies.bodies[i].velocity = linear;
+		bodies.bodies[i].ang_velocity = angular;
+	}
+}
+
+void keepInScene()
+{
+	for(int i=0; i<bodies.num; i++)
+	{
+		glm::vec3 p = bodies.bodies[i].position;
+
+		if(abs(p.x) > 10)
+			bodies.bodies[i].velocity.x = 0 - bodies.bodies[i].velocity.x;
+
+		if(abs(p.y) > 10)
+			bodies.bodies[i].velocity.y = 0 - bodies.bodies[i].velocity.y;
+
+		if(abs(p.z) > 10)
+			bodies.bodies[i].velocity.z = 0 - bodies.bodies[i].velocity.z;
+	}
+}
+
 void init()
 {
 	noTex_shader.CompileShaders();
 	line_shader.CompileShaders();
 
 	bodies.drag_coeff = default_drag_coef;
-	bodies.addRigidBody(MESH_SUZANNE);
-	bodies.addRigidBody(MESH_CUBE);
-	bodies.addRigidBody(MESH_SPHERE);
-	bodies.addRigidBody(MESH_TORUS);
+	for(int i=0; i<5; i++)
+	{
+		bodies.addRigidBody(MESH_SUZANNE);
+		bodies.addRigidBody(MESH_CUBE);
+		bodies.addRigidBody(MESH_SPHERE);
+		bodies.addRigidBody(MESH_TORUS);
+	}
+	assignRandomVels();
 	
 	bodies.load_mesh();
 
@@ -257,10 +300,18 @@ void display()
 	glUniformMatrix4fv (new_proj_mat_location, 1, GL_FALSE, glm::value_ptr(proj_mat));
 	glUniformMatrix4fv (new_view_mat_location, 1, GL_FALSE, glm::value_ptr(view_mat));
 
-	bodies.drawAABBs(line_shader.id);
+
+	bodies.drawCollisionBoxes(line_shader.id);
+
+	glm::mat4 mat;
+	int model_matrix_location = glGetUniformLocation (line_shader.id, "model");
+	glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, glm::value_ptr(mat));
 
 
+	int colour_location = glGetUniformLocation (line_shader.id, "colour");
+	glUniform3fv(colour_location, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f, 0.0f)));
 
+	glutWireCube(20);
 
 
 
@@ -285,7 +336,8 @@ void updateScene()
 
 	bodies.update(elapsed_seconds);
 //	bodies.checkCollisionsSphere();
-	bodies.checkCollisionsAABBSweepPrune();
+//	bodies.checkCollisionsAABBSweepPrune();
+	keepInScene();
 
 	glutPostRedisplay();
 }

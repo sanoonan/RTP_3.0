@@ -195,7 +195,7 @@ void BoundingSphere :: draw(GLuint spID, glm::vec3 colour)
 	int colour_location = glGetUniformLocation (spID, "colour");
 	glUniform3fv(colour_location, 1, glm::value_ptr(colour));
 
-	glutWireSphere(radius, 100, 100);
+	glutWireSphere(radius, 25, 25);
 
 
 

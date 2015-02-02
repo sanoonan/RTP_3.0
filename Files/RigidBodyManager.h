@@ -38,6 +38,7 @@ public:
 
 	std::vector<RigidBody> bodies;
 	
+	string collision_method;
 
 	int num;
 
@@ -61,6 +62,7 @@ public:
 
 	bool checkRayHit(glm::vec3 ray_origin, glm::vec3 p1, glm::vec3 p2, int &hit_target, glm::vec3 &hit_pos);
 
+	void drawCollisionBoxes(GLuint spID);
 	void drawBSpheres(GLuint spID);
 	void drawAABBs(GLuint spID);
 
@@ -169,4 +171,27 @@ public:
 	void insertionSort(SPpointList &list);
 
 	void checkCollisionsAABBSweepPrune();
+
+
+	struct CollisionPair
+	{
+		RigidBody *body1, *body2;
+
+		CollisionPair()
+		{
+			body1 = body2 = NULL;
+		}
+		CollisionPair(RigidBody &_body1, RigidBody &_body2)
+		{
+			body1 = &_body1;
+			body2 = &_body2;
+		}
+
+	};
+
+	std::vector<CollisionPair> collision_pairs;
+
+	void clearCollisions();
+	void updateCollisions();
+
 };

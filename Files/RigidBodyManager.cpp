@@ -9,15 +9,16 @@ RigidBodyManager :: RigidBodyManager()
 {
 	num = 0;
 	drag_coeff = 0;
+	collision_method = "Spheres";
 }
 
 
 void RigidBodyManager :: addRigidBody(RigidBody body)
 {
-	num++;
 	body.id = num;
 	body.drag_coeff = drag_coeff;
 	bodies.push_back(body);
+	num++;
 }
 
 void RigidBodyManager :: addRigidBody(Mesh mesh)
@@ -33,12 +34,27 @@ void RigidBodyManager :: addRigidBody(const char* filename)
 	addRigidBody(body);
 }
 
+void TW_CALL changeCollision(void *clientData)
+{
+	string current = static_cast<RigidBodyManager *>(clientData)->collision_method;
+	string next;
+
+	if(current == "Spheres")
+		next = "AABBs";
+	else if(current == "AABBs")
+		next = "SweepPrune";
+	else
+		next = "Spheres";
+
+	static_cast<RigidBodyManager *>(clientData)->collision_method = next;
+}
 
 void RigidBodyManager :: addTBar(TwBar *bar)
 {
-	TwAddVarRO(bar, "Drag Coefficient", TW_TYPE_FLOAT, &drag_coeff, "");
+	TwAddVarRO(bar, "Collision Method", TW_TYPE_STDSTRING, &collision_method, "");
+	TwAddButton(bar, "Change Method", changeCollision, this, "");
+//	TwAddVarRW(bar, "Drag Coefficient", TW_TYPE_FLOAT, &drag_coeff, "");
 	TwAddVarRO(bar, "Number of Bodies", TW_TYPE_INT8, &num, "");
-
 }
 
 void RigidBodyManager :: load_mesh()
@@ -81,23 +97,23 @@ void RigidBodyManager :: updateUSlists()
 		int id = unsortedx[i].id;
 		bool start = unsortedx[i].start;
 		if(start)
-			unsortedx[i].point = bodies[id-1].aabb.vmin.x;
+			unsortedx[i].point = bodies[id].aabb.vmin.x;
 		else
-			unsortedx[i].point = bodies[id-1].aabb.vmax.x;
+			unsortedx[i].point = bodies[id].aabb.vmax.x;
 
 		id = unsortedy[i].id;
 		start = unsortedy[i].start;
 		if(start)
-			unsortedy[i].point = bodies[id-1].aabb.vmin.y;
+			unsortedy[i].point = bodies[id].aabb.vmin.y;
 		else
-			unsortedy[i].point = bodies[id-1].aabb.vmax.y;
+			unsortedy[i].point = bodies[id].aabb.vmax.y;
 
 		id = unsortedz[i].id;
 		start = unsortedz[i].start;
 		if(start)
-			unsortedz[i].point = bodies[id-1].aabb.vmin.z;
+			unsortedz[i].point = bodies[id].aabb.vmin.z;
 		else
-			unsortedz[i].point = bodies[id-1].aabb.vmax.z;
+			unsortedz[i].point = bodies[id].aabb.vmax.z;
 
 	}
 }
@@ -190,8 +206,16 @@ void RigidBodyManager :: update(float dt)
 	for(int i=0; i<num; i++)
 		bodies[i].update(dt);
 
-	updateUSlists();
-	updateSPlists();
+	clearCollisions();
+
+	if(collision_method == "Spheres")
+		checkCollisionsSphere();
+	else if (collision_method == "AABBs")
+		checkCollisionsAABB();
+	else
+		checkCollisionsAABBSweepPrune();
+
+	updateCollisions();
 }
 
 
@@ -245,6 +269,16 @@ bool RigidBodyManager :: checkRayHit(glm::vec3 ray_origin, glm::vec3 p1, glm::ve
 	return hit;
 }
 
+
+void RigidBodyManager :: drawCollisionBoxes(GLuint spID)
+{
+	if(collision_method == "Spheres")
+		drawBSpheres(spID);
+	else
+		drawAABBs(spID);
+}
+
+
 void RigidBodyManager :: drawBSpheres(GLuint spID)
 {
 	for(int i=0; i<num; i++)
@@ -260,8 +294,7 @@ void RigidBodyManager :: drawAABBs(GLuint spID)
 
 void RigidBodyManager :: checkCollisionsSphere()
 {
-	for(int i=0; i<num; i++)
-		bodies[i].collision = false;
+
 
 	for(int i=0; i<num; i++)
 		for(int j=0; j<num; j++)
@@ -269,38 +302,30 @@ void RigidBodyManager :: checkCollisionsSphere()
 			if(i != j)
 			{
 				if(bodies[i].b_sphere.checkCollision(bodies[j].b_sphere))
-				{
-					bodies[i].collision = true;
-					bodies[j].collision = true;
-				}
+					collision_pairs.push_back(CollisionPair(bodies[i], bodies[j]));
 			}
 		}
 }
 
 void RigidBodyManager :: checkCollisionsAABB()
 {
-	for(int i=0; i<num; i++)
-		bodies[i].collision = false;
+
 
 	for(int i=0; i<num; i++)
-		for(int j=0; j<num; j++)
+		for(int j=i+1; j<num; j++)
 		{
-			if(i != j)
-			{
-				if(bodies[i].aabb.checkCollision(bodies[j].aabb))
-				{
-					bodies[i].collision = true;
-					bodies[j].collision = true;
-				}
-			}
+
+			if(bodies[i].aabb.checkCollision(bodies[j].aabb))
+				collision_pairs.push_back(CollisionPair(bodies[i], bodies[j]));
+
 		}
 }
 
 
 void RigidBodyManager :: checkCollisionsAABBSweepPrune()
 {
-	for(int i=0; i<num; i++)
-		bodies[i].collision = false;
+	updateUSlists();
+	updateSPlists();
 
 
 	std::vector<std::vector<int>> pairs(num);
@@ -319,7 +344,7 @@ void RigidBodyManager :: checkCollisionsAABBSweepPrune()
 
 	while(current != NULL)
 	{
-		int id = current->id-1;
+		int id = current->id;
 		if(current->start)
 		{
 			active_list.push_back(id);
@@ -353,8 +378,24 @@ void RigidBodyManager :: checkCollisionsAABBSweepPrune()
 	for(int i=0; i<num; i++)
 		for(int j=0; j<num; j++)
 			if(pairs[i][j] >= 3)
-			{
-				bodies[i].collision = true;
-				bodies[j].collision = true;
-			}
+				collision_pairs.push_back(CollisionPair(bodies[i], bodies[j]));
+}
+
+void RigidBodyManager :: clearCollisions()
+{
+	for(int i=0; i<num; i++)
+		bodies[i].collision = false;
+
+	collision_pairs.clear();
+}
+
+void RigidBodyManager :: updateCollisions()
+{
+	int size = collision_pairs.size();
+
+	for(int i=0; i<size; i++)
+	{
+		collision_pairs[i].body1->collision = true;
+		collision_pairs[i].body2->collision = true;
+	}
 }
